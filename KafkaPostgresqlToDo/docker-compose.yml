@@ -1,0 +1,108 @@
+services:
+  # Postgres Database
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tododb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres_data:/var/lib/postgresql/data
+
+  # Kafka Broker 1
+  kafka1:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka1
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka1:9093,OUTSIDE://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - ./docker/kafka_1_data:/var/lib/kafka/data
+
+  # Kafka Broker 2
+  kafka2:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka2
+    ports:
+      - "9094:9094"
+      - "9095:9095"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka2:9095,OUTSIDE://localhost:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - ./docker/kafka_2_data:/var/lib/kafka/data
+
+  # Kafka Broker 3
+  kafka3:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka3
+    ports:
+      - "9096:9096"
+      - "9097:9097"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka3:9097,OUTSIDE://localhost:9096
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - ./docker/kafka_3_data:/var/lib/kafka/data
+
+  # Zookeeper
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "8084:8080"
+    depends_on:
+      - kafka1
+      - kafka2
+      - zookeeper
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9093,kafka2:9095
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+
+  api:
+    build:
+      dockerfile: Dockerfile
+    container_name: todo-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - kafka1
+      - kafka2
+      - zookeeper
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
