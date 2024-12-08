@@ -74,7 +74,7 @@ namespace KafkaPostgresqlToDo.Services
 
                 if (response?.CorrelationId != correlationId) continue;
 
-                return Task.FromResult(response.GetResult);
+                return Task.FromResult(response.GetResult!);
             }
         }
     }

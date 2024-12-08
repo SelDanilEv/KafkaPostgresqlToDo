@@ -71,4 +71,4 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-app.Run();
+await app.RunAsync();

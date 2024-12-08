@@ -6,7 +6,7 @@ public enum Group
     ResponseGroup
 }
 
-public static class GroupExtentions
+public static class GroupExtensions
 {
     public static string GetName(this Group topic)
     {

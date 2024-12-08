@@ -10,9 +10,9 @@ public enum Topic
     Responses
 }
 
-public static class TopicExtentions
+public static class TopicExtensions
 {
-    private class Topics
+    private static class Topics
     {
         public const string RequestAllToDo = "list-todo";
         public const string CreateToDo = "create-todo";
